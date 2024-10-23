@@ -12,6 +12,7 @@
 .DS_Store
 .TimeRecord
 license
+ok-robot-manipulation/dynamem_log/*
 ok-robot-manipulation/src/checkpoints/*
 ok-robot-manipulation/src/example_data/*
 /src/sample_save_directory/*

@@ -134,30 +134,28 @@ class ObjectHandler:
         In any of the above attempts it is able to succeed it won't perform any further tries
         """
 
+        cur_time = datetime.now().strftime("%Y%m%d_%H%M%S")
         tries = 1
         retry = True
         while retry and tries <= 11:
             self.receive_input(tries)
 
-            cur_time = datetime.now().strftime("%Y%m%d_%H%M%S")
             # Directory for saving visualisations
-            self.save_dir = self.cfgs.environment + "/" + self.query + "/" + cur_time + "/"
-            if not os.path.exists(self.save_dir):
-                os.makedirs(self.save_dir)
+            self.save_dir = self.cfgs.environment + "/" + self.query + "/" + cur_time
             debug_text = (
                 "### Robot's monolouge: \n ## The text query I received is " + self.query + ".\n"
             )
             if not os.path.exists(self.save_dir):
                 os.makedirs(self.save_dir)
             if self.cfgs.open_communication:
-                camera_image_file_name = self.save_dir + "clean_" + str(tries) + ".jpg"
+                camera_image_file_name = self.save_dir + "/clean_" + str(tries) + ".jpg"
                 self.cam.image.save(camera_image_file_name)
                 # rr.log('Image_received_by_robot', rr.Image(cv2.imread(camera_image_file_name)[:, :, [2, 1, 0]]), static = True)
                 print(f"Saving the camera image at {camera_image_file_name}")
-                np.save(self.save_dir + "depths_" + str(tries) + ".npy", self.cam.depths)
+                np.save(self.save_dir + "/depths_" + str(tries) + ".npy", self.cam.depths)
 
-            box_filename = f"{self.save_dir}object_detection_{tries}.jpg"
-            mask_filename = f"{self.save_dir}semantic_segmentation_{tries}.jpg"
+            box_filename = f"{self.save_dir}/object_detection_{tries}.jpg"
+            mask_filename = f"{self.save_dir}/semantic_segmentation_{tries}.jpg"
             # Object Segmentation Mask
 
             colors = np.array(self.cam.image)
@@ -199,7 +197,7 @@ class ObjectHandler:
                 # rr.log("robot_monologue", rr.TextDocument(debug_text + '### Now I move myself such that ' + self.query + ' appears in the center of the head camera.\n', media_type = rr.MediaType.MARKDOWN), static = True)
                 self.center_robot(bbox)
                 tries += 1
-                time.sleep(2.5)
+                time.sleep(1.5)
                 continue
 
             points = get_3d_points(self.cam)
@@ -459,7 +457,11 @@ class ObjectHandler:
             )
             return False
 
-        projections_file_name = self.save_dir + "grasp_projections.jpg"
+        projections_file_name = (
+            # self.cfgs.environment + "/" + self.query + "/anygrasp/grasp_projections.jpg"
+            self.save_dir
+            + "/grasp_projections.jpg"
+        )
         image.save(projections_file_name)
         print(f"Saved projections of grasps at {projections_file_name}")
         filter_gg = filter_gg.nms().sort_by_score()
@@ -478,13 +480,15 @@ class ObjectHandler:
                 cloud,
                 grippers,
                 visualize=not self.cfgs.headless,
-                save_file=f"{self.save_dir}poses.jpg",
+                # save_file=f"{self.cfgs.environment}/{self.query}/anygrasp/poses.jpg",
+                save_file=f"{self.save_dir}/poses.jpg",
                 rerun_name="all_anygrasp_estimated_poses",
             )
             visualize_cloud_geometries(
                 cloud,
                 [filter_grippers[0].paint_uniform_color([1.0, 0.0, 0.0])],
                 visualize=not self.cfgs.headless,
+                # save_file=f"{self.cfgs.environment}/{self.query}/anygrasp/best_pose.jpg",
                 save_file=f"{self.save_dir}/best_pose.jpg",
                 rerun_name="selected_pose",
             )

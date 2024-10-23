@@ -25,11 +25,12 @@ from transformers import AutoProcessor, Owlv2ForObjectDetection
 class OWLSAMProcessor(ImageProcessor):
     def __init__(self, device="cuda"):
         super().__init__()
+        print("Loading OWLSAMv2")
         self.device = device
 
-        self.processor = AutoProcessor.from_pretrained("google/owlv2-base-patch16-ensemble")
+        self.processor = AutoProcessor.from_pretrained("google/owlv2-large-patch14-ensemble")
         self.model = Owlv2ForObjectDetection.from_pretrained(
-            "google/owlv2-base-patch16-ensemble"
+            "google/owlv2-large-patch14-ensemble"
         ).to(self.device)
 
         sam_checkpoint = f"./sam2_hiera_small.pt"
