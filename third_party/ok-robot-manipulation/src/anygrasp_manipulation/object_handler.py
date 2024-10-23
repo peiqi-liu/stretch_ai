@@ -20,6 +20,7 @@ import copy
 import math
 import os
 import time
+from datetime import datetime
 
 import numpy as np
 import open3d as o3d
@@ -138,8 +139,11 @@ class ObjectHandler:
         while retry and tries <= 11:
             self.receive_input(tries)
 
+            cur_time = datetime.now().strftime("%Y%m%d_%H%M%S")
             # Directory for saving visualisations
-            self.save_dir = self.cfgs.environment + "/" + self.query + "/anygrasp/"
+            self.save_dir = self.cfgs.environment + "/" + self.query + "/" + cur_time + "/"
+            if not os.path.exists(self.save_dir):
+                os.makedirs(self.save_dir)
             debug_text = (
                 "### Robot's monolouge: \n ## The text query I received is " + self.query + ".\n"
             )
@@ -152,12 +156,8 @@ class ObjectHandler:
                 print(f"Saving the camera image at {camera_image_file_name}")
                 np.save(self.save_dir + "depths_" + str(tries) + ".npy", self.cam.depths)
 
-            box_filename = (
-                f"{self.cfgs.environment}/{self.query}/anygrasp/object_detection_{tries}.jpg"
-            )
-            mask_filename = (
-                f"{self.cfgs.environment}/{self.query}/anygrasp/semantic_segmentation_{tries}.jpg"
-            )
+            box_filename = f"{self.save_dir}object_detection_{tries}.jpg"
+            mask_filename = f"{self.save_dir}semantic_segmentation_{tries}.jpg"
             # Object Segmentation Mask
 
             colors = np.array(self.cam.image)
@@ -459,9 +459,7 @@ class ObjectHandler:
             )
             return False
 
-        projections_file_name = (
-            self.cfgs.environment + "/" + self.query + "/anygrasp/grasp_projections.jpg"
-        )
+        projections_file_name = self.save_dir + "grasp_projections.jpg"
         image.save(projections_file_name)
         print(f"Saved projections of grasps at {projections_file_name}")
         filter_gg = filter_gg.nms().sort_by_score()
@@ -480,14 +478,14 @@ class ObjectHandler:
                 cloud,
                 grippers,
                 visualize=not self.cfgs.headless,
-                save_file=f"{self.cfgs.environment}/{self.query}/anygrasp/poses.jpg",
+                save_file=f"{self.save_dir}poses.jpg",
                 rerun_name="all_anygrasp_estimated_poses",
             )
             visualize_cloud_geometries(
                 cloud,
                 [filter_grippers[0].paint_uniform_color([1.0, 0.0, 0.0])],
                 visualize=not self.cfgs.headless,
-                save_file=f"{self.cfgs.environment}/{self.query}/anygrasp/best_pose.jpg",
+                save_file=f"{self.save_dir}/best_pose.jpg",
                 rerun_name="selected_pose",
             )
 

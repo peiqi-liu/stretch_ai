@@ -110,8 +110,6 @@ class RobotAgentMDP:
         self.look_around_times: list[float] = []
         self.execute_times: list[float] = []
 
-        timestamp = f"{datetime.datetime.now():%Y-%m-%d-%H-%M-%S}"
-
     def look_around(self):
         print("*" * 10, "Look around to check", "*" * 10)
         for pan in [0.4, -0.4, -1.2, -1.6]:
