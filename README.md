@@ -1,5 +1,7 @@
 # Stretch AI
 
+## For those who want to try DynaMem, DynaMem's codes have been refactored to [Stretch AI](https://github.com/hello-robot/stretch_ai/blob/main/src/stretch/app/run_dynamem.py) and the docs is [here](https://github.com/hello-robot/stretch_ai/blob/main/docs/dynamem.md). If you want to see the original implementation of DynaMem here, check [this folder](https://github.com/peiqi-liu/stretch_ai/tree/main/src/stretch/dynav)
+
 [![Python 3.9](https://img.shields.io/badge/python-3.9-blue.svg)](https://www.python.org/downloads/release/python-390/)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
