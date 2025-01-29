@@ -62,7 +62,7 @@ class StretchClient(AbstractRobotClient):
 
         if camera_overrides is None:
             camera_overrides = {}
-        self._ros_client = StretchRosInterface(init_lidar=False, d405=d405, **camera_overrides)
+        self._ros_client = StretchRosInterface(init_lidar=True, d405=d405, **camera_overrides)
 
         # Robot model
         self._robot_model = HelloStretchKinematics(
@@ -118,6 +118,10 @@ class StretchClient(AbstractRobotClient):
 
         return result_pre and result_post
 
+    @property
+    def base_control_mode(self) -> ControlMode:
+        return self._base_control_mode
+
     def switch_to_busy_mode(self) -> bool:
         """Switch to a mode that says we are occupied doing something blocking"""
         self._base_control_mode = ControlMode.BUSY
@@ -154,6 +158,7 @@ class StretchClient(AbstractRobotClient):
         self.stop()
 
     def stop(self):
+        """Stop the robot"""
         self.nav.disable()
         self.manip.disable()
         self._base_control_mode = ControlMode.IDLE
@@ -163,6 +168,10 @@ class StretchClient(AbstractRobotClient):
     def get_robot_model(self) -> RobotModel:
         """return a model of the robot for planning. Overrides base class method"""
         return self._robot_model
+
+    def get_ros_client(self) -> StretchRosInterface:
+        """return the internal ROS client"""
+        return self._ros_client
 
     @property
     def robot_joint_pos(self):
@@ -211,6 +220,10 @@ class StretchClient(AbstractRobotClient):
     def ee_rgb_cam(self):
         return self._ros_client.ee_rgb_cam
 
+    @property
+    def lidar(self):
+        return self._ros_client._lidar
+
     def get_joint_state(self):
         """Get joint states from the robot. If in manipulation mode, use the base_x position from start of manipulation mode as the joint state for base_x."""
         q, dq, eff = self._ros_client.get_joint_state()
@@ -238,7 +251,7 @@ class StretchClient(AbstractRobotClient):
 
         # First retract the robot's joints
         self.switch_to_manipulation_mode()
-        pan, tilt = self._robot_model.look_front
+        pan, tilt = self._robot_model.look_close
         pos = self.manip._extract_joint_pos(STRETCH_NAVIGATION_Q)
         print("- go to configuration:", pos, "pan =", pan, "tilt =", tilt)
         self.manip.goto_joint_positions(pos, head_pan=pan, head_tilt=tilt, blocking=True)
@@ -248,6 +261,21 @@ class StretchClient(AbstractRobotClient):
     def get_base_pose(self) -> np.ndarray:
         """Get the robot's base pose as XYT."""
         return self.nav.get_base_pose()
+
+    def get_pose_graph(self) -> np.ndarray:
+        """Get SLAM pose graph as a numpy array"""
+        graph = self._ros_client.get_pose_graph()
+        for i in range(len(graph)):
+            relative_pose = xyt2sophus(np.array(graph[i][1:]))
+            euler_angles = relative_pose.so3().log()
+            theta = euler_angles[-1]
+
+            # GPS in robot coordinates
+            gps = relative_pose.translation()[:2]
+
+            graph[i] = np.array([graph[i][0], gps[0], gps[1], theta])
+
+        return graph
 
     def load_map(self, filename: str):
         self.mapping.load_map(filename)
@@ -305,6 +333,10 @@ class StretchClient(AbstractRobotClient):
         # Get joint state information
         joint_positions, _, _ = self.get_joint_state()
 
+        # Get lidar points and timestamp
+        lidar_points = self.lidar.get()
+        lidar_timestamp = self.lidar.get_time().nanoseconds / 1e9
+
         # Create the observation
         obs = Observations(
             rgb=rgb,
@@ -315,6 +347,8 @@ class StretchClient(AbstractRobotClient):
             camera_pose=self.head_camera_pose,
             joint=joint_positions,
             camera_K=self.get_camera_intrinsics(),
+            lidar_points=lidar_points,
+            lidar_timestamp=lidar_timestamp,
         )
         return obs
 
