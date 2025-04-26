@@ -342,7 +342,9 @@ class AStar(Planner):
         # return [start_xy] + [self.to_xy(pt) for pt in path[1:-1]] + [end_xy]
         return [start_xy] + [self.to_xy(pt) for pt in path[1:]]
 
-    def plan(self, start, goal, verbose: bool = True) -> PlanResult:
+    def plan(
+        self, start, goal, remove_line_of_sight_points: bool = True, verbose: bool = True
+    ) -> PlanResult:
         """plan from start to goal. creates a new tree.
 
         Based on Caelan Garrett's code (MIT licensed):
@@ -358,7 +360,9 @@ class AStar(Planner):
         #     return PlanResult(False, reason="[Planner] invalid goal")
         # Add start to the tree
         # print('Start running A* ', time.time() - self.start_time, ' seconds after path planning starts')
-        waypoints = self.run_astar(start[:2], goal[:2])
+        waypoints = self.run_astar(
+            start[:2], goal[:2], remove_line_of_sight_points=remove_line_of_sight_points
+        )
         # print('Finish running A* ', time.time() - self.start_time, ' seconds after path planning starts')
 
         if waypoints is None:

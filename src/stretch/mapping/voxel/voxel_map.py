@@ -243,6 +243,34 @@ class SparseVoxelMapNavigationSpace(XYT):
         theta_idx = self._get_theta_index(theta)
         return self._oriented_masks[theta_idx]
 
+    def to_pt(self, xy: Tuple[float, float]) -> Tuple[int, int]:
+        """Converts a point from continuous, world xy coordinates to grid coordinates.
+
+        Args:
+            xy: The point in continuous xy coordinates.
+
+        Returns:
+            The point in discrete grid coordinates.
+        """
+        # # type: ignore to bypass mypy checking
+        xy = np.array([xy[0], xy[1]])  # type: ignore
+        pt = self.voxel_map.xy_to_grid_coords(xy)  # type: ignore
+        return int(pt[0]), int(pt[1])
+
+    def to_xy(self, pt: Tuple[int, int]) -> Tuple[float, float]:
+        """Converts a point from grid coordinates to continuous, world xy coordinates.
+
+        Args:
+            pt: The point in grid coordinates.
+
+        Returns:
+            The point in continuous xy coordinates.
+        """
+        # # type: ignore to bypass mypy checking
+        pt = np.array([pt[0], pt[1]])  # type: ignore
+        xy = self.voxel_map.grid_coords_to_xy(pt)  # type: ignore
+        return float(xy[0]), float(xy[1])
+
     def is_valid(
         self,
         state: torch.Tensor,
