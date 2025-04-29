@@ -154,7 +154,7 @@ class SparseVoxelMap(object):
         use_derivative_filter: bool = False,
         derivative_filter_threshold: float = 0.5,
         prune_detected_objects: bool = False,
-        add_local_radius_every_step: bool = True,
+        add_local_radius_every_step: bool = False,
         min_points_per_voxel: int = 10,
         use_negative_obstacles: bool = False,
     ):

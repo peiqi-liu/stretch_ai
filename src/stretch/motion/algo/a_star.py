@@ -227,8 +227,8 @@ class AStar(Planner):
             else:
                 j = i + 1
             # Include the mid waypoint to avoid the collision
-            if j - i >= 2:
-                cleaned_path.append(path[(i + j) // 2])
+            # if j - i >= 2:
+            #     cleaned_path.append(path[(i + j) // 2])
             cleaned_path.append(path[j])
             i = j
         return cleaned_path
@@ -343,7 +343,7 @@ class AStar(Planner):
         return [start_xy] + [self.to_xy(pt) for pt in path[1:]]
 
     def plan(
-        self, start, goal, remove_line_of_sight_points: bool = True, verbose: bool = True
+        self, start, goal, remove_line_of_sight_points: bool = False, verbose: bool = True
     ) -> PlanResult:
         """plan from start to goal. creates a new tree.
 
