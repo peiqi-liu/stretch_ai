@@ -139,7 +139,7 @@ class AStar(Planner):
         return obstacle_punishment
 
     # A* heuristic
-    def compute_heuristic(self, a: Tuple[int, int], b: Tuple[int, int], weight=6, avoid=3) -> float:
+    def compute_heuristic(self, a: Tuple[int, int], b: Tuple[int, int], weight=6, avoid=8) -> float:
         return (
             self.compute_dis(a, b)
             + weight * self.compute_obstacle_punishment(a, weight, avoid)
